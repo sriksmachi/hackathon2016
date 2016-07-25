@@ -7,6 +7,9 @@ using AuthBot.Models;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using System.Configuration;
+using Microsoft.WindowsAzure.Management.Compute;
+using Microsoft.WindowsAzure.Subscriptions;
+using Microsoft.WindowsAzure;
 
 namespace hackathonsqlazurebot.Dialogs
 {
@@ -33,9 +36,6 @@ namespace hackathonsqlazurebot.Dialogs
         public virtual async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> item)
         {
             var message = await item;
-            //if (message.Text == "logon")
-            //{
-            //endpoint v2
             if (string.IsNullOrEmpty(await context.GetAccessToken(AuthSettings.Scopes)))
             {
                 try
@@ -51,7 +51,6 @@ namespace hackathonsqlazurebot.Dialogs
             {
                 context.Wait(MessageReceivedAsync);
             }
-            //}
             if (message.Text == "echo")
             {
                 await context.PostAsync("echo");
@@ -66,6 +65,16 @@ namespace hackathonsqlazurebot.Dialogs
             {
                 await context.Logout();
                 context.Wait(this.MessageReceivedAsync);
+            }
+            else if(message.Text == "azure")
+            {
+                var token = await context.GetAccessToken(AuthSettings.Scopes);
+                var credentials = new TokenCloudCredentials(ConfigurationManager.AppSettings["subscriptionId"], token);
+                SubscriptionClient subscriptionClient = null;
+                using (subscriptionClient = new SubscriptionClient(credentials))
+                {
+                    var subscritions = subscriptionClient.Subscriptions.List();
+                }
             }
             else
             {
