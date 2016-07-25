@@ -23,62 +23,76 @@ namespace hackathonsqlazurebot.Dialogs
 
         public async Task TokenSample(IDialogContext context)
         {
-            //endpoint v2
-            var accessToken = await context.GetAccessToken(AuthSettings.Scopes);
+            //endpoint v1
+            var accessToken = await context.GetAccessToken(ConfigurationManager.AppSettings["ActiveDirectory.ResourceId"]);
+
             if (string.IsNullOrEmpty(accessToken))
             {
                 return;
             }
+
             await context.PostAsync($"Your access token is: {accessToken}");
+
             context.Wait(MessageReceivedAsync);
         }
 
         public virtual async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> item)
         {
-            var message = await item;
-            if (string.IsNullOrEmpty(await context.GetAccessToken(AuthSettings.Scopes)))
+            try
             {
-                try
-                {
-                    await context.Forward(new AzureAuthDialog(AuthSettings.Scopes), this.ResumeAfterAuth, message, CancellationToken.None);
-                }
-                catch (Exception ex)
-                {
-                    throw ex;
-                }
-            }
-            else
-            {
-                context.Wait(MessageReceivedAsync);
-            }
-            if (message.Text == "echo")
-            {
-                await context.PostAsync("echo");
+                var message = await item;
 
-                context.Wait(this.MessageReceivedAsync);
-            }
-            else if (message.Text == "token")
-            {
-                await TokenSample(context);
-            }
-            else if (message.Text == "logout")
-            {
-                await context.Logout();
-                context.Wait(this.MessageReceivedAsync);
-            }
-            else if(message.Text == "azure")
-            {
-                var token = await context.GetAccessToken(AuthSettings.Scopes);
-                var credentials = new TokenCloudCredentials(ConfigurationManager.AppSettings["subscriptionId"], token);
-                SubscriptionClient subscriptionClient = null;
-                using (subscriptionClient = new SubscriptionClient(credentials))
+                if (message.Text == "logon")
                 {
-                    var subscritions = subscriptionClient.Subscriptions.List();
+                    //endpoint v1
+                    if (string.IsNullOrEmpty(await context.GetAccessToken(ConfigurationManager.AppSettings["ActiveDirectory.ResourceId"])))
+                    {
+                        await context.Forward(new AzureAuthDialog(ConfigurationManager.AppSettings["ActiveDirectory.ResourceId"]), this.ResumeAfterAuth, message, CancellationToken.None);
+                    }
+                    else
+                    {
+                        context.Wait(MessageReceivedAsync);
+                    }
+                }
+                else if (message.Text == "echo")
+                {
+                    await context.PostAsync("echo");
+
+                    context.Wait(this.MessageReceivedAsync);
+                }
+                else if (message.Text == "token")
+                {
+                    await TokenSample(context);
+                }
+                else if (message.Text == "logout")
+                {
+                    await context.Logout();
+                    context.Wait(this.MessageReceivedAsync);
+                }
+                else if (message.Text == "azure")
+                {
+                    var token = await context.GetAccessToken(ConfigurationManager.AppSettings["ActiveDirectory.ResourceId"]);
+                    var credentials = new TokenCloudCredentials(token);
+                    SubscriptionClient subscriptionClient = null;
+                    using (subscriptionClient = new SubscriptionClient(credentials))
+                    {
+                        var subscriptions = subscriptionClient.Subscriptions.List();
+                        string subscriptionNames = string.Empty;
+                        foreach (var subscription in subscriptions)
+                        {
+                            subscriptionNames += subscription.SubscriptionName + "\n";
+                        }
+                        await context.PostAsync(subscriptionNames);
+                    }
+                }
+                else
+                {
+                    context.Wait(MessageReceivedAsync);
                 }
             }
-            else
+            catch (Exception ex)
             {
-                context.Wait(MessageReceivedAsync);
+                throw ex;
             }
         }
 
