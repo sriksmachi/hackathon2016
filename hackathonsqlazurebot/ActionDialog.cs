@@ -22,41 +22,37 @@ namespace hackathonsqlazurebot.Dialogs
         {
             //endpoint v2
             var accessToken = await context.GetAccessToken(AuthSettings.Scopes);
-
             if (string.IsNullOrEmpty(accessToken))
             {
                 return;
             }
-
             await context.PostAsync($"Your access token is: {accessToken}");
-
             context.Wait(MessageReceivedAsync);
         }
 
         public virtual async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> item)
         {
             var message = await item;
-
-            if (message.Text == "logon")
+            //if (message.Text == "logon")
+            //{
+            //endpoint v2
+            if (string.IsNullOrEmpty(await context.GetAccessToken(AuthSettings.Scopes)))
             {
-                //endpoint v2
-                if (string.IsNullOrEmpty(await context.GetAccessToken(AuthSettings.Scopes)))
+                try
                 {
-                    try
-                    {
-                        await context.Forward(new AzureAuthDialog(AuthSettings.Scopes), this.ResumeAfterAuth, message, CancellationToken.None);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw ex;
-                    }
+                    await context.Forward(new AzureAuthDialog(AuthSettings.Scopes), this.ResumeAfterAuth, message, CancellationToken.None);
                 }
-                else
+                catch (Exception ex)
                 {
-                    context.Wait(MessageReceivedAsync);
+                    throw ex;
                 }
             }
-            else if (message.Text == "echo")
+            else
+            {
+                context.Wait(MessageReceivedAsync);
+            }
+            //}
+            if (message.Text == "echo")
             {
                 await context.PostAsync("echo");
 
