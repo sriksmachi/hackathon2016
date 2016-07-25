@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SQLAzureBot", "MyBotApplication\SQLAzureBot.csproj", "{A8BA1066-5695-4D71-ABB4-65E5A5E0C3D4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "hackathonsqlazurebot", "hackathonsqlazurebot\hackathonsqlazurebot.csproj", "{2F0216D8-4A90-4B41-BFE0-F38D474805A1}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,10 +11,10 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{A8BA1066-5695-4D71-ABB4-65E5A5E0C3D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A8BA1066-5695-4D71-ABB4-65E5A5E0C3D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A8BA1066-5695-4D71-ABB4-65E5A5E0C3D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A8BA1066-5695-4D71-ABB4-65E5A5E0C3D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2F0216D8-4A90-4B41-BFE0-F38D474805A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F0216D8-4A90-4B41-BFE0-F38D474805A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F0216D8-4A90-4B41-BFE0-F38D474805A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F0216D8-4A90-4B41-BFE0-F38D474805A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

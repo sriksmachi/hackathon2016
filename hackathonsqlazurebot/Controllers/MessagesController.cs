@@ -6,15 +6,14 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
 using Microsoft.Bot.Connector;
-using Microsoft.Bot.Connector.Utilities;
 using Newtonsoft.Json;
 using Microsoft.Bot.Builder.Dialogs;
-using SQLAzureBot.Dialogs;
+using hackathonsqlazurebot.Dialogs;
 
-namespace SQLAzureBot
+namespace hackathonsqlazurebot
 {
-    [Microsoft.Bot.Connector.Utilities.BotAuthentication]
-    public class MessageController : ApiController
+    [BotAuthentication]
+    public class MessagesController : ApiController
     {
         /// <summary>
         /// POST: api/Messages
