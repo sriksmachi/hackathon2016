@@ -71,19 +71,17 @@ namespace hackathonsqlazurebot.Dialogs
                 }
                 else if (message.Text == "azure")
                 {
+                    var azureManagementClient = new AzureManagement();
                     var token = await context.GetAccessToken(ConfigurationManager.AppSettings["ActiveDirectory.ResourceId"]);
-                    var credentials = new TokenCloudCredentials(token);
-                    SubscriptionClient subscriptionClient = null;
-                    using (subscriptionClient = new SubscriptionClient(credentials))
-                    {
-                        var subscriptions = subscriptionClient.Subscriptions.List();
-                        string subscriptionNames = string.Empty;
-                        foreach (var subscription in subscriptions)
-                        {
-                            subscriptionNames += subscription.SubscriptionName + "\n";
-                        }
-                        await context.PostAsync(subscriptionNames);
-                    }
+                    var result = azureManagementClient.GetAzureSubscriptions(token);
+                    await context.PostAsync(result);
+                }
+                else if (message.Text == "server")
+                {
+                    var azureManagementClient = new AzureManagement();
+                    var token = await context.GetAccessToken(ConfigurationManager.AppSettings["ActiveDirectory.ResourceId"]);
+                    var result = await azureManagementClient.GetSQLServers(token);
+                    await context.PostAsync(result);
                 }
                 else
                 {
