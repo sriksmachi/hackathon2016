@@ -41,8 +41,8 @@ namespace hackathonsqlazurebot.Dialogs
             try
             {
                 var message = await item;
-
-                if (message.Text == "logon")
+                var token = await context.GetAccessToken(ConfigurationManager.AppSettings["ActiveDirectory.ResourceId"]);
+                if (string.IsNullOrEmpty(token))
                 {
                     //endpoint v1
                     if (string.IsNullOrEmpty(await context.GetAccessToken(ConfigurationManager.AppSettings["ActiveDirectory.ResourceId"])))
@@ -69,22 +69,9 @@ namespace hackathonsqlazurebot.Dialogs
                     await context.Logout();
                     context.Wait(this.MessageReceivedAsync);
                 }
-                else if (message.Text == "azure")
-                {
-                    var azureManagementClient = new AzureManagement();
-                    var token = await context.GetAccessToken(ConfigurationManager.AppSettings["ActiveDirectory.ResourceId"]);
-                    var result = azureManagementClient.GetAzureSubscriptions(token);
-                    await context.PostAsync(result);
-                }
-                else if (message.Text == "server")
-                {
-                    var azureManagementClient = new AzureManagement();
-                    var token = await context.GetAccessToken(ConfigurationManager.AppSettings["ActiveDirectory.ResourceId"]);
-                    var result = await azureManagementClient.GetSQLServers(token);
-                    await context.PostAsync(result);
-                }
                 else
                 {
+                    ProcessChatMessage(context, message, token);
                     context.Wait(MessageReceivedAsync);
                 }
             }
@@ -94,10 +81,28 @@ namespace hackathonsqlazurebot.Dialogs
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        private async void ProcessChatMessage(IDialogContext context, IMessageActivity message, string token)
+        {
+            var azureManagementClient = new AzureManagement();
+            switch (message.Text)
+            {
+                case "azure":
+                    var subscriptions = azureManagementClient.GetAzureSubscriptions(token);
+                    await context.PostAsync(subscriptions);
+                    break;
+                case "server":
+                    var servers = await azureManagementClient.GetSQLServers(token);
+                    await context.PostAsync(servers);
+                    break;
+            }
+        }
+
         private async Task ResumeAfterAuth(IDialogContext context, IAwaitable<string> result)
         {
             var message = await result;
-
             await context.PostAsync(message);
             context.Wait(MessageReceivedAsync);
         }
