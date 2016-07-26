@@ -8,7 +8,10 @@ using System.Web.Http.Description;
 using Microsoft.Bot.Connector;
 using Newtonsoft.Json;
 using Microsoft.Bot.Builder.Dialogs;
-using hackathonsqlazurebot.Dialogs;
+using Newtonsoft.Json.Linq;
+using Microsoft.Bot.Builder.FormFlow;
+using System.Configuration;
+using System.Diagnostics;
 
 namespace hackathonsqlazurebot
 {
@@ -21,27 +24,26 @@ namespace hackathonsqlazurebot
         /// </summary>
         public async Task<HttpResponseMessage> Post([FromBody]Activity activity)
         {
-            if (activity != null && activity.GetActivityType() == ActivityTypes.Message)
+            try
             {
-                await Conversation.SendAsync(activity, () => new ActionDialog());
+                if (activity != null && activity.GetActivityType() == ActivityTypes.Message)
+                {
+                    switch (activity.GetActivityType())
+                    {
+                        case ActivityTypes.Message:
+                            await Conversation.SendAsync(activity, () => new ActionDialog());
+                            break;
+                        default:
+                            Trace.TraceError($"Azure Bot ignored an activity. Activity type received: {activity.GetActivityType()}");
+                            break;
+                    }
+                }
             }
-            else
+            catch (Exception ex)
             {
-                this.HandleSystemMessage(activity);
+                throw ex;
             }
             return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
-        }
-
-        private Activity HandleSystemMessage(Activity message)
-        {
-            if (message.Type == ActivityTypes.Ping)
-            {
-                Activity reply = message.CreateReply();
-                reply.Type = ActivityTypes.Ping;
-                return reply;
-            }
-
-            return null;
         }
     }
 }
