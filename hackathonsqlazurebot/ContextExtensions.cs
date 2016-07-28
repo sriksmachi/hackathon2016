@@ -17,10 +17,26 @@
             return subscriptionId;
         }
 
+        public static string GetSQLServerName(this IBotContext context)
+        {
+            string sqlservername;
+
+            context.UserData.TryGetValue<string>(ContextConstants.SQLServerKey, out sqlservername);
+
+            return sqlservername;
+        }
+
         public static void StoreSubscriptionId(this IBotContext context, string subscriptionId)
         {
             context.UserData.SetValue(ContextConstants.SubscriptionIdKey, subscriptionId);
         }
+
+        public static void StoreSQLServer(this IBotContext context, string sqlServer)
+        {
+            context.UserData.SetValue(ContextConstants.SQLServerKey, sqlServer);
+        }
+
+
         public static void Cleanup(this IBotContext context)
         {
             context.UserData.RemoveValue(ContextConstants.SubscriptionIdKey);

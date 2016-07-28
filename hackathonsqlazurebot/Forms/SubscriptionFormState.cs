@@ -36,4 +36,16 @@ namespace hackathonsqlazurebot.Forms
         public IEnumerable<SQLServer> AvailableSQLServers { get; private set; }
     }
 
+
+    [Serializable]
+    public class SQLServerInfoFormState
+    {
+        public SQLServerInfoFormState(List<string> sqlServersInfo)
+        {
+            this.Info = sqlServersInfo;
+        }
+
+        public List<string> Info { get; set; }
+    }
+
 }

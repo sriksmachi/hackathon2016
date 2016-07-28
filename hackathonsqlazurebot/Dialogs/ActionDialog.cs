@@ -36,9 +36,7 @@ namespace hackathonsqlazurebot
         public async Task None(IDialogContext context, LuisResult result)
         {
             string message = $"Sorry, I did not understand '{result.Query}'. Type 'help' if you need assistance.";
-
             await context.PostAsync(message);
-
             context.Wait(MessageReceived);
         }
 
@@ -222,6 +220,29 @@ namespace hackathonsqlazurebot
             context.Call(form, this.UseSQLServerFormComplete);
         }
 
+        [LuisIntent("SelectServer")]
+        public async Task SelectServer(IDialogContext context, LuisResult result)
+        {
+            var accessToken = await context.GetAccessToken(resourceId.Value);
+            if (string.IsNullOrEmpty(accessToken))
+            {
+                return;
+            }
+            var subscriptionId = context.GetSubscriptionId();
+            var sqlServerName = context.GetSQLServerName();
+            var azureManagementClient = new AzureManagement();
+            var sqlServerInfo = await azureManagementClient.GetSQLServerInfo(subscriptionId, accessToken, sqlServerName);
+            var formState = new SQLServerInfoFormState(sqlServerInfo);
+            formState.Info = sqlServerInfo;
+            var form = new FormDialog<SQLServerInfoFormState>(
+                formState,
+                EntityForms.BuildSQLServerInfoForm,
+                FormOptions.PromptInStart,
+                result.Entities);
+            //context.Call(form, this.UseSQLServerInfoFormComplete);
+        }
+
+
         private async Task UseSubscriptionFormComplete(IDialogContext context, IAwaitable<SubscriptionFormState> result)
         {
             try
@@ -272,8 +293,8 @@ namespace hackathonsqlazurebot
                 {
                     var selectedSQLServer = sqlServerFormState.AvailableSQLServers.Single(sub => sub.DisplayName == 
                     sqlServerFormState.DisplayName);
-                    //context.StoreSubscriptionId(sqlServerFormState.SubscriptionId);
-                    await context.PostAsync($"Setting {selectedSQLServer.DisplayName} as the current subscription. What would you like to do next?");
+                    context.StoreSQLServer(sqlServerFormState.DisplayName);
+                    await context.PostAsync($"Setting {selectedSQLServer.DisplayName} as the current server. What would you like to do next?");
                     context.Wait(this.MessageReceived);
                 }
                 else
@@ -281,7 +302,7 @@ namespace hackathonsqlazurebot
                     PromptDialog.Confirm(
                         context,
                         this.OnLogoutRequested,
-                        "Oops! You don't have any SQL Azure under the account you used to log in. To continue using the bot, log in with a different account. Do you want to log out and start over?",
+                        "Oops! You don't have any SQL Azure Accounts under the account you used to log in. To continue using the bot, log in with a different account. Do you want to log out and start over?",
                         "Didn't get that!",
                         promptStyle: PromptStyle.None);
                 }
@@ -301,6 +322,45 @@ namespace hackathonsqlazurebot
                 context.Wait(this.MessageReceived);
             }
         }
+
+        //private async Task UseSQLServerInfoFormComplete(IDialogContext context, IAwaitable<SQLServerInfoFormState> result)
+
+        //{
+        //    try
+        //    {
+        //        var sqlServerFormState = await result;
+        //        if (!sqlServerFormState.Info.Any())
+        //        {
+        //            var sqlServerInfo = sqlServerFormState.Info;
+        //            context.StoreSQLServer(sqlServerFormState.DisplayName);
+        //            await context.PostAsync($"Setting {selectedSQLServer.DisplayName} as the current server. What would you like to do next?");
+        //            context.Wait(this.MessageReceived);
+        //        }
+        //        else
+        //        {
+        //            PromptDialog.Confirm(
+        //                context,
+        //                this.OnLogoutRequested,
+        //                "Oops! You don't have any SQL Azure Accounts under the account you used to log in. To continue using the bot, log in with a different account. Do you want to log out and start over?",
+        //                "Didn't get that!",
+        //                promptStyle: PromptStyle.None);
+        //        }
+        //    }
+        //    catch (FormCanceledException<SQLServerFormState> e)
+        //    {
+        //        string reply;
+        //        if (e.InnerException == null)
+        //        {
+        //            reply = "You have canceled the operation. What would you like to do next?";
+        //        }
+        //        else
+        //        {
+        //            reply = $"Oops! Something went wrong :(. Technical Details: {e.InnerException.Message}";
+        //        }
+        //        await context.PostAsync(reply);
+        //        context.Wait(this.MessageReceived);
+        //    }
+        //}
 
         private async Task OnLogoutRequested(IDialogContext context, IAwaitable<bool> confirmation)
         {

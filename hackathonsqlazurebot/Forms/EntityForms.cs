@@ -58,6 +58,30 @@
                .Build();
         }
 
+        public static IForm<SQLServerInfoFormState> BuildSQLServerInfoForm()
+        {
+            var prompt = new PromptAttribute()
+            {
+                ChoiceStyle = ChoiceStyleOptions.PerLine
+            };
+
+            return CreateCustomForm<SQLServerInfoFormState>()
+                .Field(new FieldReflector<SQLServerInfoFormState>(nameof(SQLServerInfoFormState.Info))
+                .SetType(null)
+                .SetActive(x => x.Info.Any())
+                .SetPrompt(PerLinePromptAttribute("SQL Server Information:"))
+                .SetDefine((state, field) =>
+                {
+                    foreach (var sub in state.Info)
+                    {
+                        field.AddDescription(sub, sub)
+                            .AddTerms(sub, sub);
+                    }
+                    return Task.FromResult(true);
+                }))
+               .Build();
+        }
+
         private static IFormBuilder<T> CreateCustomForm<T>()
           where T : class
         {

@@ -40,5 +40,22 @@ namespace hackathonsqlazurebot
                 return await Task.FromResult(serverNames);
             }
         }
+
+        public async Task<List<string>> GetSQLServerInfo(string token, string subscriptionid, string servername)
+        {
+            var credentials = new TokenCloudCredentials(subscriptionid, token);
+            using (SqlManagementClient sqlManagementClient =
+                new SqlManagementClient(credentials))
+            {
+                var servers = await sqlManagementClient.Servers.ListAsync();
+                var server = (from s in servers where s.Name == servername select s).FirstOrDefault();
+                var serverInfo = new List<string>();
+                serverInfo.Add("Name: " + server.FullyQualifiedDomainName);
+                serverInfo.Add("Location:" + server.Location);
+                serverInfo.Add("Version: " + server.Version);
+                return await Task.FromResult(serverInfo);
+            }
+        }
+
     }
 }
